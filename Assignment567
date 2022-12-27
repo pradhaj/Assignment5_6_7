@@ -1,0 +1,329 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import numpy as np
+from sklearn import linear_model
+
+# Assignment5
+
+
+## Ground Cricket Chirps
+
+In _The Song of Insects_ (1948) by George W. Pierce, Pierce mechanically measured the frequency (the number of wing vibrations per second) of chirps (or pulses of sound) made by a striped ground cricket, at various ground temperatures.  Since crickets are ectotherms (cold-blooded), the rate of their physiological processes and their overall metabolism are influenced by temperature.  Consequently, there is reason to believe that temperature would have a profound effect on aspects of their behavior, such as chirp frequency.
+
+In general, it was found that crickets did not sing at temperatures colder than 60º F. or warmer than 100º F.
+
+ground_cricket_data = {"Chirps/Second": [20.0, 16.0, 19.8, 18.4, 17.1, 15.5, 14.7,
+                                         15.7, 15.4, 16.3, 15.0, 17.2, 16.0, 17.0,
+                                         14.4],
+                       "Ground Temperature": [88.6, 71.6, 93.3, 84.3, 80.6, 75.2, 69.7,
+                                              71.6, 69.4, 83.3, 79.6, 82.6, 80.6, 83.5,
+                                              76.3]}
+df = pd.DataFrame(ground_cricket_data)
+
+### Tasks
+
+1. Find the linear regression equation for this data.
+2. Chart the original data and the equation on the chart.
+3. Find the equation's $R^2$ score (use the `.score` method) to determine whether the
+equation is a good fit for this data. (0.8 and greater is considered a strong correlation.)
+4. Extrapolate data:  If the ground temperature reached 95, then at what approximate rate would you expect the crickets to be chirping?
+5. Interpolate data:  With a listening device, you discovered that on a particular morning the crickets were chirping at a rate of 18 chirps per second.  What was the approximate ground temperature that morning? 
+
+df.shape
+
+df
+
+df.describe() # to clean the data
+
+df.isnull().sum() #Checking any null values
+
+df.dtypes #check data types
+
+df = df.drop_duplicates() #check duplicates
+df.shape
+
+iqr = df['Chirps/Second'].quantile(0.75) - df['Chirps/Second'].quantile(0.25) #check outliers
+upper_threshold = df['Chirps/Second'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Chirps/Second'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+iqr = df['Ground Temperature'].quantile(0.75) - df['Ground Temperature'].quantile(0.25)
+upper_threshold = df['Ground Temperature'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Ground Temperature'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+df.plot(x='Chirps/Second', y='Ground Temperature', style='o')
+plt.title('Chirps/Second vs Ground Temperature')
+plt.xlabel('Chirps/Second')
+plt.ylabel('Ground Temperature')
+plt.show()
+
+df.corr() # correlation
+
+X = df.loc[:, ['Chirps/Second']].values # select all rows and select all columns except the last column as my feature
+y = df.loc[:, 'Ground Temperature'].values # target as arrays
+# Syntax : dataset.loc[:, :-1]
+from sklearn.model_selection import train_test_split #import the required function
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3)
+
+y_test
+
+X_train.shape, X_test.shape
+
+from sklearn.linear_model import LinearRegression 
+regressor = LinearRegression() # spredicted score = m * hours + c  
+"Symtax : varName = ModelName(modelHyperParams)"
+regressor.fit(X_train, y_train) 
+
+print(regressor.intercept_) # c
+
+print(regressor.coef_) # slope - m
+
+regressor.predict([[7]])
+
+y_pred = regressor.predict(X_test) 
+"Syntax : varName.predict(test_features)"
+y_pred
+
+df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+df
+
+regressor.predict([[12]]) # perils of extrapolation
+
+from sklearn import metrics # metrics will contain all the evaluation metrics
+print('R2- SCORE:', metrics.r2_score(y_test,y_pred))
+regressor.score(X_test,y_test) 
+
+# Assignment6
+
+## Brain vs. Body Weight
+
+In the file `brain_body.txt`, the average brain and body weight for a number of mammal species are recorded. Load this data into a Pandas data frame.
+
+### Tasks
+
+1. Find the linear regression equation for this data for brain weight to body weight.
+2. Chart the original data and the equation on the chart.
+3. Find the equation's $R^2$ score (use the `.score` method) to determine whether the
+equation is a good fit for this data. (0.8 and greater is considered a strong correlation.)
+
+df = pd.read_fwf("C:/Users/Karthi/Downloads/brain_body.txt")
+
+df
+
+print(df.shape)
+df.head()
+
+df.describe()
+
+df.isnull().sum() #Checking any null values
+
+df.dtypes #check data types
+
+df = df.drop_duplicates() #check duplicates
+df.shape
+
+iqr = df['Brain'].quantile(0.75) - df['Brain'].quantile(0.25) #check outliers
+upper_threshold = df['Brain'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Brain'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+df.Brain = df.Brain.clip(-70.80,119.60)
+
+iqr = df['Body'].quantile(0.75) - df['Body'].quantile(0.25) #check outliers
+upper_threshold = df['Body'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Body'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+df.Body = df.Body.clip(-238.375,408.625)
+
+df.shape
+
+df.plot(x='Brain', y='Body', style='o')
+plt.title('Brain vs Body')
+plt.xlabel('Brain')
+plt.ylabel('Body')
+plt.show()
+
+df.corr() # correlation
+
+X = df.loc[:, ['Brain']].values # select all rows and select all columns except the last column as my feature
+y = df.loc[:, 'Body'].values # target as arrays
+# Syntax : dataset.loc[:, :-1]
+from sklearn.model_selection import train_test_split #import the required function
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.25)
+
+y_test
+
+X_train.shape, X_test.shape
+
+from sklearn.linear_model import LinearRegression 
+regressor = LinearRegression() # spredicted score = m * hours + c  
+"Symtax : varName = ModelName(modelHyperParams)"
+regressor.fit(X_train, y_train) 
+
+print(regressor.intercept_) # c
+
+print(regressor.coef_) # slope - m
+
+regressor.predict([[7]])
+
+y_pred = regressor.predict(X_test) 
+"Syntax : varName.predict(test_features)"
+y_pred
+
+df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+df
+
+regressor.predict([[12]]) # perils of extrapolation
+
+from sklearn import metrics # metrics will contain all the evaluation metrics
+print('R2- SCORE:', metrics.r2_score(y_test,y_pred))
+regressor.score(X_test,y_test) 
+
+# Assignment7
+
+## Salary Discrimination
+
+The file `salary.txt` contains data for 52 tenure-track professors at a small Midwestern college. This data was used in legal proceedings in the 1980s about discrimination against women in salary.
+
+The data in the file, by column:
+
+1. Sex. 1 for female, 0 for male.
+2. Rank. 1 for assistant professor, 2 for associate professor, 3 for full professor.
+3. Year. Number of years in current rank.
+4. Degree. Highest degree. 1 for doctorate, 0 for master's.
+5. YSdeg. Years since highest degree was earned.
+6. Salary. Salary/year in dollars.
+
+### Tasks
+
+1. Find the linear regression equation for this data using columns 1-5 to column 6.
+2. Find the selection of columns with the best $R^2$ score.
+3. Report whether sex is a factor in salary.
+
+df = pd.read_fwf("C:/Users/Karthi/Downloads/salary.txt", header=None, 
+                 names=["Sex", "Rank", "Year", "Degree", "YSdeg", "Salary"])
+
+df.head()
+
+df.shape
+
+df.isnull().sum()
+
+df.dtypes
+
+df = df.drop_duplicates()
+
+df.describe()
+
+iqr = df['Sex'].quantile(0.75) - df['Sex'].quantile(0.25)
+upper_threshold = df['Sex'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Sex'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+iqr = df['Rank'].quantile(0.75) - df['Rank'].quantile(0.25)
+upper_threshold = df['Rank'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Rank'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+iqr = df['Year'].quantile(0.75) - df['Year'].quantile(0.25)
+upper_threshold = df['Year'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Year'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+iqr = df['Degree'].quantile(0.75) - df['Degree'].quantile(0.25)
+upper_threshold = df['Degree'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['Degree'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+iqr = df['YSdeg'].quantile(0.75) - df['YSdeg'].quantile(0.25)
+upper_threshold = df['YSdeg'].quantile(0.75) + (1.5 * iqr)
+lower_threshold = df['YSdeg'].quantile(0.25) - (1.5 * iqr)
+upper_threshold, lower_threshold
+
+df.YSdeg = df.YSdeg.clip(18.0,48.0)
+
+df.shape
+
+df.groupby('Sex')['Salary'].mean()
+
+df.plot(x='Sex', y='Salary', style='o')
+plt.title('Sex vs Salary')
+plt.xlabel('Sex')
+plt.ylabel('Salary')
+plt.show()
+
+df[['Sex','Salary']].corr()
+
+df.plot(x='Rank', y='Salary', style='o')
+plt.title('Rank vs Salary')
+plt.xlabel('Rank')
+plt.ylabel('Salary')
+plt.show()
+
+df[['Rank','Salary']].corr()
+
+df.plot(x='Year', y='Salary', style='o')
+plt.title('Year vs Salary')
+plt.xlabel('Year')
+plt.ylabel('Salary')
+plt.show()
+
+df[['Year','Salary']].corr()
+
+df.plot(x='Degree', y='Salary', style='o')
+plt.title('Degree vs Salary')
+plt.xlabel('Degree')
+plt.ylabel('Salary')
+plt.show()
+
+df[['Degree','Salary']].corr()
+
+df['transformed'] = np.log(df['Degree']) # transformation
+df.plot(x='transformed', y='Salary', style='o')
+plt.title('Degree vs Salary')
+plt.xlabel('Transformed Degree')
+plt.ylabel('Salary')
+plt.show()
+df[['transformed','Salary']].corr()
+
+df.plot(x='YSdeg', y='Salary', style='o')
+plt.title('YSdeg vs Salary')
+plt.xlabel('YSdeg')
+plt.ylabel('Salary')
+plt.show()
+
+df[['YSdeg','Salary']].corr()
+
+X = df[['Sex', 'Rank', 'Year','Degree','YSdeg']].values #array of features
+y = df['Salary'].values #array of targets
+
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+from sklearn.preprocessing import StandardScaler ## standrard scalig 
+scaler = StandardScaler() #initialise to a variable
+scaler.fit(X_train) # we are finding the values of mean and sd from the td
+X_train_scaled = scaler.transform(X_train) # fit (mean, sd) and then transform the training data
+X_test_scaled = scaler.transform(X_test) # transform the test data 
+
+from sklearn.linear_model import LinearRegression
+regressor = LinearRegression()
+regressor.fit(X_train_scaled, y_train)
+
+coeff_df = pd.DataFrame(regressor.coef_,['Sex', 'Rank', 
+        'Year','Degree','YSdeg'], columns=['Coefficient'])
+y_pred = regressor.predict(X_test_scaled)
+coeff_df
+
+regressor.predict(scaler.transform(np.array([[1,5,3,4,2]])))
+
+regressor.intercept_
+
+df = pd.DataFrame({'Actual': y_test, 'Predicted': y_pred})
+df
+
+from sklearn import metrics
+print('R2- SCORE:', metrics.r2_score(y_test,y_pred))
+
